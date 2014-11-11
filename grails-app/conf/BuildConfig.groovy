@@ -27,6 +27,11 @@ grails.project.repos.Harchvard.type = "maven"
 grails.project.repos.Harchvard.username = "admin"
 grails.project.repos.Harchvard.password = "password"
 
+grails.project.repos.HarchvardRelease.url = "http://artifactory/plugins-release-local"
+grails.project.repos.HarchvardRelease.type = "maven"
+grails.project.repos.HarchvardRelease.username = "admin"
+grails.project.repos.HarchvardRelease.password = "password"
+
 grails.project.repos.default = "Harchvard"
 
 grails.project.dependency.resolver = "maven" // or ivy
