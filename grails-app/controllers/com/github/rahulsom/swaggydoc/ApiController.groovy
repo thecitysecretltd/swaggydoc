@@ -224,12 +224,19 @@ class ApiController {
         }
         def fullLink = g.createLink(controller: slug, action: method.name, params: pathParams) as String
 
-        def link = fullLink.replace('%7B', '{').replace('%7D', '}') - basePath
         def httpMethod = getHttpMethod(theController, method)
         def domainName = slugToDomain(slug)
         def inferredNickname = "${httpMethod.toLowerCase()}${slug}${method.name}"
 
+        String apiEndpoint = getApi(theController).value()
+        def link = apiEndpoint ?: fullLink.replace('%7B', '{').replace('%7D', '}') - basePath
+
         defineMethod(link, httpMethod, domainName, inferredNickname, parameters, [], "List ${domainName}s")
+    }
+
+    private static boolean isResourceMethod(String name)
+    {
+        name ==~ /(index|show|save|update|patch|delete)/
     }
 
     private static String slugToDomain(String slug) {
@@ -259,6 +266,11 @@ class ApiController {
                 [code: 404, message: "Could not find ${domainName} with that Id"],
         ]
 
+        String apiEndpoint = getApi(theController).value()
+        link = apiEndpoint ?
+                apiEndpoint + link.substring(link.lastIndexOf("/")) :
+                link
+
         defineMethod(link, httpMethod, domainName, inferredNickname, parameters, responseMessages, "Show ${domainName}")
     }
 
@@ -283,6 +295,9 @@ class ApiController {
         def responseMessages = [
                 [code: 422, message: 'Bad Entity received'],
         ]
+
+        String apiEndpoint = getApi(theController).value()
+        link = apiEndpoint ?: link
 
         defineMethod(link, httpMethod, domainName, inferredNickname, parameters, responseMessages, "Save ${domainName}")
     }
@@ -312,6 +327,11 @@ class ApiController {
                 [code: 422, message: 'Bad Entity received'],
         ]
 
+        String apiEndpoint = getApi(theController).value()
+        link = apiEndpoint ?
+                apiEndpoint + link.substring(link.lastIndexOf("/")) :
+                link
+
         defineMethod(link, httpMethod, domainName, inferredNickname, parameters, responseMessages, "Save ${domainName}")
     }
 
@@ -340,6 +360,11 @@ class ApiController {
                 [code: 422, message: 'Bad Entity received'],
         ]
 
+        String apiEndpoint = getApi(theController).value()
+        link = apiEndpoint ?
+                apiEndpoint + link.substring(link.lastIndexOf("/")) :
+                link
+
         defineMethod(link, httpMethod, domainName, inferredNickname, parameters, responseMessages, "Save ${domainName}")
     }
 
@@ -365,6 +390,11 @@ class ApiController {
                 [code: 400, message: 'Bad Id provided'],
                 [code: 404, message: "Could not find ${domainName} with that Id"],
         ]
+
+        String apiEndpoint = getApi(theController).value()
+        link = apiEndpoint ?
+                apiEndpoint + link.substring(link.lastIndexOf("/")) :
+                link
 
         defineMethod(link, httpMethod, 'void', inferredNickname, parameters, responseMessages, "Delete ${domainName}")
     }
@@ -405,6 +435,12 @@ class ApiController {
         def httpMethod = getHttpMethod(theController, method)
         def parameters = apiParams?.collect { ApiImplicitParam it -> paramToMap(it) } ?: []
         def inferredNickname = "${httpMethod.toLowerCase()}${slug}${method.name}"
+
+        String apiEndpoint = getApi(theController).value()
+        link = apiEndpoint ?
+                apiEndpoint + (!isResourceMethod(method.name) ? "/${method.name}" : "") +
+                        (pathParams ? link.substring(link.lastIndexOf("/")) : "") :
+                link
 
         [
                 path      : link,
