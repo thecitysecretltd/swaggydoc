@@ -7,7 +7,8 @@ grails.project.class.dir = "target/classes"
 grails.project.test.class.dir = "target/test-classes"
 grails.project.test.reports.dir = "target/test-reports"
 
-grails.project.fork = [
+grails.project.fork = false
+/*[
     // configure settings for compilation JVM, note that if you alter the Groovy version forked compilation is required
     //  compile: [maxMemory: 256, minMemory: 64, debug: false, maxPerm: 256, daemon:true],
 
@@ -19,7 +20,14 @@ grails.project.fork = [
     war: [maxMemory: 768, minMemory: 64, debug: false, maxPerm: 256, forkReserve:false],
     // configure settings for the Console UI JVM
     console: [maxMemory: 768, minMemory: 64, debug: false, maxPerm: 256]
-]
+]*/
+
+grails.project.repos.Harchvard.url = "http://artifactory/plugins-snapshot-local"
+grails.project.repos.Harchvard.type = "maven"
+grails.project.repos.Harchvard.username = "admin"
+grails.project.repos.Harchvard.password = "password"
+
+grails.project.repos.default = "Harchvard"
 
 grails.project.dependency.resolver = "maven" // or ivy
 grails.project.dependency.resolution = {
@@ -30,6 +38,9 @@ grails.project.dependency.resolution = {
     }
     log "warn" // log level of Ivy resolver, either 'error', 'warn', 'info', 'debug' or 'verbose'
     repositories {
+        mavenRepo("http://artifactory/plugins-snapshot-local") {
+            updatePolicy 'always'
+        }
         grailsCentral()
         mavenLocal()
         mavenCentral()
@@ -42,7 +53,7 @@ grails.project.dependency.resolution = {
     dependencies {
         // specify dependencies here under either 'build', 'compile', 'runtime', 'test' or 'provided' scopes eg.
         // runtime 'mysql:mysql-connector-java:5.1.27'
-        compile 'com.wordnik:swagger-annotations:1.3.8'
+        compile 'com.wordnik:swagger-annotations:1.3.10'
     }
 
     plugins {
