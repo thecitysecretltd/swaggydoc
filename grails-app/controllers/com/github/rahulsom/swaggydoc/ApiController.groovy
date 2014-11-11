@@ -165,15 +165,18 @@ class ApiController {
     }
 
     private Map getModels(Collection<Class<?>> modelTypes) {
+        ConfigObject config = grailsApplication.config.swaggydoc
         Queue m = modelTypes.findAll{it} as Queue
         def models = [:]
         while (m.size()) {
             Class model = m.poll()
             def props = model.declaredFields.findAll {
-                !it.toString().contains(' static ') &&
-                        !it.toString().contains(' transient ') &&
+                !it.toString().contains('static ') &&
+                        !it.toString().contains('transient ') &&
                         it.name != 'errors'
             }
+
+            props.removeAll { config.excludedProperties.contains(it.name) }
 
             def grailsDomainClass = grailsApplication.domainClasses.find { it.clazz == model } as GrailsDomainClass
             def optional = grailsDomainClass?.constrainedProperties?.findAll { k, v -> v.isNullable() }
