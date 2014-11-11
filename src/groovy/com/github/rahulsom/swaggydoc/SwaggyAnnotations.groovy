@@ -12,10 +12,10 @@ import java.lang.annotation.Target
 @Retention(RetentionPolicy.RUNTIME)
 public @interface SwaggyList {
     /**
-     * Whether to define a param q for search. Defaults true
+     * Whether to define a param q for search. Defaults false
      * @return
      */
-    boolean searchParam() default true
+    boolean searchParam() default false
 }
 
 @Target(ElementType.METHOD)
