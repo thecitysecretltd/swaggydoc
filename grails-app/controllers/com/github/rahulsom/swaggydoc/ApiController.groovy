@@ -1,16 +1,12 @@
 package com.github.rahulsom.swaggydoc
-
 import com.wordnik.swagger.annotations.*
 import grails.converters.JSON
 import org.codehaus.groovy.grails.commons.GrailsClass
 import org.codehaus.groovy.grails.commons.GrailsDomainClass
-import org.codehaus.groovy.grails.validation.ConstrainedProperty
 
-import java.beans.ConstructorProperties
 import java.lang.reflect.AccessibleObject
 import java.lang.reflect.Field
 import java.lang.reflect.Method
-import java.lang.reflect.ParameterizedType
 
 class ApiController {
 
@@ -190,10 +186,12 @@ class ApiController {
 
             models[model.simpleName] = modelDescription
             def knownTypes = [int, Integer, long, Long, float, Float, double, Double, String]
+            knownTypes.add(model)
             props.each {Field f ->
                 if (!models.containsKey(f.type.simpleName) && !m.contains(f.type) && !knownTypes.contains(f.type) ) {
                     if (f.type.isAssignableFrom(List) || f.type.isAssignableFrom(Set)) {
                         def typeArgs = f.genericType.actualTypeArguments[0]
+                        if(knownTypes.contains(typeArgs)) return
                         m.add(typeArgs)
                     } else {
                         m.add(f.type)
