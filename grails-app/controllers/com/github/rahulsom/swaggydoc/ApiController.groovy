@@ -7,6 +7,7 @@ import org.codehaus.groovy.grails.commons.GrailsDomainClass
 import java.lang.reflect.AccessibleObject
 import java.lang.reflect.Field
 import java.lang.reflect.Method
+import java.time.temporal.Temporal
 
 class ApiController {
 
@@ -443,10 +444,12 @@ class ApiController {
             [type: 'number', format: 'double']
         } else if (f.type.isAssignableFrom(Long)) {
             [type: 'integer', format: 'int64']
-        } else if (f.type.isAssignableFrom(Date)) {
+        } else if (f.type.isAssignableFrom(Date) || Temporal.isAssignableFrom(f.type)) {
             [type: 'string', format: 'date-time']
         } else if (f.type.isAssignableFrom(Boolean)) {
             [type: 'boolean']
+        } else if (getCurrencyClass() && getCurrencyClass().isAssignableFrom(f.type)) {
+            [type: 'string']
         } else if (f.type.isAssignableFrom(Set) || f.type.isAssignableFrom(List)){
             def clazzName = f.genericType.actualTypeArguments[0].simpleName
             [
@@ -457,6 +460,19 @@ class ApiController {
             ['$ref': f.type.simpleName]
         }
 
+    }
+
+    private static Class getCurrencyClass()
+    {
+        Class c
+        try
+        {
+            c = Class.forName("javax.money.CurrencyUnit")
+        } catch (ClassNotFoundException ignored)
+        {
+            return null
+        }
+        return c
     }
 
     /**
