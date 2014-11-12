@@ -1,6 +1,7 @@
 package com.github.rahulsom.swaggydoc
 import com.wordnik.swagger.annotations.*
 import grails.converters.JSON
+import org.codehaus.groovy.grails.commons.DefaultGrailsControllerClass
 import org.codehaus.groovy.grails.commons.GrailsClass
 import org.codehaus.groovy.grails.commons.GrailsDomainClass
 
@@ -121,8 +122,9 @@ class ApiController {
     def show() {
         header 'Access-Control-Allow-Origin', '*'
         ConfigObject config = grailsApplication.config.swaggydoc
-        def theController = grailsApplication.controllerClasses.find {
-            it.logicalPropertyName == params.id
+        def theController = grailsApplication.controllerClasses.find { DefaultGrailsControllerClass it ->
+            it.logicalPropertyName == params.id &&
+                    it.clazz.getAnnotation(Api) != null
         }
 
         Api api = getApi(theController)
