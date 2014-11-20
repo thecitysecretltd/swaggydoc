@@ -42,3 +42,8 @@ public @interface SwaggyPatch {
 @Retention(RetentionPolicy.RUNTIME)
 public @interface SwaggyDelete {
 }
+
+@Retention(RetentionPolicy.RUNTIME)
+public @interface Model {
+    Class<?> value();
+}

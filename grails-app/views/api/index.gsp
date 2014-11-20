@@ -77,7 +77,7 @@
             </div>
 
             <div class='input'>
-                <input placeholder="api_key" id="input_apiKey" name="apiKey" type="text"/>
+                <input placeholder="auth_token" id="input_apiKey" name="apiKey" type="text"/>
             </div>
 
             <div class='input'><a id="explore" href="#">Explore</a></div>

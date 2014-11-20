@@ -147,7 +147,8 @@ class ApiController {
 
         def apis = apiMethods.collect { documentMethod(it, theController) } + getSwaggyApis(theController)
 
-        Map models = getModels(modelTypes)
+        Model modelOverride = theController.clazz.annotations.find { it.annotationType() == Model }
+        Map models = getModels(modelOverride?.value() ? [modelOverride.value()] : modelTypes)
 
         def groupedApis = apis.
                 groupBy { Map it -> it.path }.
@@ -209,6 +210,12 @@ class ApiController {
         models
     }
 
+    private Class<?> getOverrideModel(GrailsClass theController)
+    {
+        Model modelOverride = theController.clazz.annotations.find { it.annotationType() == Model }
+        return modelOverride?.value()
+    }
+
     @SuppressWarnings("GrMethodMayBeStatic")
     private Map generateListMethod(Method method, GrailsClass theController) {
         def basePath = g.createLink(uri: '')
@@ -236,7 +243,9 @@ class ApiController {
         String apiEndpoint = getApi(theController).value()
         def link = apiEndpoint ?: fullLink.replace('%7B', '{').replace('%7D', '}') - basePath
 
-        defineMethod(link, httpMethod, domainName, inferredNickname, parameters, [], "List ${domainName}s")
+        def responseType = getOverrideModel(theController)?.simpleName ?: domainName
+
+        defineMethod(link, httpMethod, responseType, inferredNickname, parameters, [], "List ${domainName}s")
     }
 
     private static boolean isResourceMethod(String name)
@@ -276,7 +285,9 @@ class ApiController {
                 apiEndpoint + link.substring(link.lastIndexOf("/")) :
                 link
 
-        defineMethod(link, httpMethod, domainName, inferredNickname, parameters, responseMessages, "Show ${domainName}")
+        def responseType = getOverrideModel(theController)?.simpleName ?: domainName
+
+        defineMethod(link, httpMethod, responseType, inferredNickname, parameters, responseMessages, "Show ${domainName}")
     }
 
     @SuppressWarnings("GrMethodMayBeStatic")
@@ -285,9 +296,11 @@ class ApiController {
         def swaggySave = findAnnotation(SwaggySave, method)
         def slug = theController.logicalPropertyName
         def domainName = slugToDomain(slug)
+        def responseType = getOverrideModel(theController)?.simpleName ?: domainName
+
 
         def parameters = [
-                [name: 'body', description: "Description of ${domainName}", paramType: 'body', type: domainName, required: true],
+                [name: 'body', description: "Description of ${domainName}", paramType: 'body', type: responseType, required: true],
         ]
         def pathParams = parameters.findAll { it.paramType == 'path' }.collect { it.name }.collectEntries {
             [it, "{${it}}"]
@@ -304,7 +317,8 @@ class ApiController {
         String apiEndpoint = getApi(theController).value()
         link = apiEndpoint ?: link
 
-        defineMethod(link, httpMethod, domainName, inferredNickname, parameters, responseMessages, "Save ${domainName}")
+
+        defineMethod(link, httpMethod, responseType, inferredNickname, parameters, responseMessages, "Save ${domainName}")
     }
 
     @SuppressWarnings("GrMethodMayBeStatic")
@@ -313,10 +327,12 @@ class ApiController {
         def swaggySave = findAnnotation(SwaggySave, method)
         def slug = theController.logicalPropertyName
         def domainName = slugToDomain(slug)
+        def responseType = getOverrideModel(theController)?.simpleName ?: domainName
+
 
         def parameters = [
                 [name: 'id', description: "Id to update", paramType: 'path', type: 'string', required: true],
-                [name: 'body', description: "Description of ${domainName}", paramType: 'body', type: domainName, required: true],
+                [name: 'body', description: "Description of ${domainName}", paramType: 'body', type: responseType, required: true],
         ]
         def pathParams = parameters.findAll { it.paramType == 'path' }.collect { it.name }.collectEntries {
             [it, "{${it}}"]
@@ -337,7 +353,8 @@ class ApiController {
                 apiEndpoint + link.substring(link.lastIndexOf("/")) :
                 link
 
-        defineMethod(link, httpMethod, domainName, inferredNickname, parameters, responseMessages, "Save ${domainName}")
+
+        defineMethod(link, httpMethod, responseType, inferredNickname, parameters, responseMessages, "Save ${domainName}")
     }
 
     @SuppressWarnings("GrMethodMayBeStatic")
@@ -346,10 +363,12 @@ class ApiController {
         def swaggySave = findAnnotation(SwaggyPatch, method)
         def slug = theController.logicalPropertyName
         def domainName = slugToDomain(slug)
+        def responseType = getOverrideModel(theController)?.simpleName ?: domainName
+
 
         def parameters = [
                 [name: 'id', description: "Id to patch", paramType: 'path', type: 'string', required: true],
-                [name: 'body', description: "Description of ${domainName}", paramType: 'body', type: domainName, required: true],
+                [name: 'body', description: "Description of ${domainName}", paramType: 'body', type: responseType, required: true],
         ]
         def pathParams = parameters.findAll { it.paramType == 'path' }.collect { it.name }.collectEntries {
             [it, "{${it}}"]
@@ -370,7 +389,8 @@ class ApiController {
                 apiEndpoint + link.substring(link.lastIndexOf("/")) :
                 link
 
-        defineMethod(link, httpMethod, domainName, inferredNickname, parameters, responseMessages, "Save ${domainName}")
+
+        defineMethod(link, httpMethod, responseType, inferredNickname, parameters, responseMessages, "Save ${domainName}")
     }
 
     @SuppressWarnings("GrMethodMayBeStatic")
@@ -515,6 +535,8 @@ class ApiController {
         }
         return c
     }
+
+
 
     /**
      * Converts a param to a map for rendering
